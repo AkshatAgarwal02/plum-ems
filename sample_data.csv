@@ -1,0 +1,31 @@
+priority,status,department,issue_type,delay_days,account_name,sentiment
+Critical,Open,Claims,Claims Delay,35,GlobalLogic India,Angry
+High,In Progress,Account Management,Policy Activation Failure,8,ABC Manufacturing,Frustrated
+Medium,Blocked,Engineering,Tech/Portal Issue,12,TechSolutions Pvt Ltd,Neutral
+Critical,Open,Claims,Cashless Denial,5,Metro Health Clinics,Angry
+High,In Progress,Finance,Billing Dispute,3,Bharat Finance Corp,Frustrated
+Medium,Open,Account Management,Renewal Delay,9,Prime Logistics,Neutral
+Critical,Closed,Claims,Legal Notice,1,AlphaCorp Industries,Angry
+High,Open,Engineering,SSO Integration Broken,7,Cascade Retail,Frustrated
+Medium,In Progress,Operations,Service Quality Feedback,4,Zenith Corp,Neutral
+Critical,Open,Claims,Social Media Risk,2,Horizon Capital,Angry
+High,Blocked,Account Management,Employee Addition Delay,14,Titan Forge Industries,Frustrated
+Medium,Open,Finance,Wrong Premium Charged,6,FastTrack Logistics,Neutral
+Critical,Open,Claims,Claims Delay,28,Meridian Group,Angry
+High,In Progress,Engineering,Document Upload Failure,5,Hyperion Labs,Frustrated
+Medium,Open,Account Management,Health ID Not Issued,11,Apex Pharma,Neutral
+Critical,Open,Claims,Maternity Claim Denied,3,Vertex Systems,Angry
+High,Open,Account Management,Data Integrity Issue,16,Global Dynamics,Frustrated
+Medium,Closed,Finance,Invoice/Tax Document,2,Omni Retail Chain,Neutral
+Critical,Open,Claims,Claim Rejection,42,Precision Engineering,Angry
+High,In Progress,Account Management,Communication Gap,7,Star Manufacturing,Frustrated
+Medium,Open,Engineering,App Data Mismatch,8,Sunrise Retail,Neutral
+High,Blocked,Claims,Claims Expedite,5,Nexus Startups,Frustrated
+Medium,Open,Account Management,Compliance Documentation,10,Pixel Studios,Neutral
+Critical,Open,Claims,Cashless Denial,4,QuickCommerce,Angry
+High,In Progress,Finance,Payment Confirmation Delay,6,AquaTech Solutions,Frustrated
+Medium,Open,Account Management,Policy Issuance Delay,9,EduFirst Academy,Neutral
+Critical,Closed,Claims,Claims Delay,1,RoboWorks,Angry
+High,Open,Engineering,Tech/Integration Issue,8,PureTech Labs,Frustrated
+Medium,In Progress,Account Management,Super Top-Up Enrollment,3,Springboard Academy,Neutral
+High,Open,Account Management,Bulk Data Update,5,FreshMart,Frustrated
