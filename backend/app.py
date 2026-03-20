@@ -43,12 +43,6 @@ def cors(resp):
 def index():
     return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend"), "index.html")
 
-@app.route("/<path:path>")
-def statics(path):
-    # Don't serve API routes as static files
-    if path.startswith("api/"): return jsonify({"error": "Not found"}), 404
-    return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend"), path)
-
 @app.route("/api/dashboard/stats")
 def dash_stats():
     s = {}
@@ -313,6 +307,11 @@ def get_integrations_data():
 def integrations_status():
     """Get integration sync status"""
     return jsonify(get_sync_status())
+
+# ─── Serve static frontend files (catch-all, must be LAST) ─────────────────────
+@app.route("/<path:path>")
+def statics(path):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend"), path)
 
 if __name__=="__main__":
     # Start background scheduler for auto-sync
