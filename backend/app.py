@@ -308,11 +308,6 @@ def integrations_status():
     """Get integration sync status"""
     return jsonify(get_sync_status())
 
-# ─── Serve static frontend files (catch-all, must be LAST) ─────────────────────
-@app.route("/<path:path>")
-def statics(path):
-    return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend"), path)
-
 if __name__=="__main__":
     # Start background scheduler for auto-sync
     start_scheduler()
@@ -629,6 +624,27 @@ def custom_brief(file_id):
         "summary_bullets":bullets,
         "data_summary":{"total_rows":len(df),"columns":len(cols),"column_names":cols}
     })
+
+
+# ─── Serve static frontend files ─────────────────────────────────────────────────
+# Serve specific static directories
+@app.route("/css/<path:filename>")
+def serve_css(filename):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend/css"), filename)
+
+@app.route("/js/<path:filename>")
+def serve_js(filename):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend/js"), filename)
+
+# SPA fallback - serve index.html for any unmatched route
+@app.route("/<path:path>", defaults={"path": ""})
+def spa_fallback(path=""):
+    if path.startswith("api/"):
+        # Don't serve SPA for API routes that don't exist
+        return jsonify({"error": "Not found"}), 404
+    # Serve index.html for SPA routing
+    return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend"), "index.html")
+
 
 if __name__=="__main__":
     port = int(os.environ.get("PORT", 5000))
