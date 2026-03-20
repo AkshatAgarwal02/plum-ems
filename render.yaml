@@ -3,8 +3,8 @@ services:
     name: plum-ems
     env: python
     plan: free
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: bash start.sh
+    buildCommand: pip install -r backend/requirements.txt && cd backend && python -c "import os; os.system('python generate_data.py') if not os.path.exists('plum_ems.db') else None"
+    startCommand: python backend/app.py
     envVars:
       - key: FLASK_ENV
         value: production
