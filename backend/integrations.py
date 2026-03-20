@@ -6,6 +6,8 @@ Handles OAuth, data fetching, and syncing
 import os, json, sqlite3, requests
 from datetime import datetime
 from functools import wraps
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "plum_ems.db")
 
@@ -211,4 +213,49 @@ def get_external_escalations():
         "slack_escalations": [dict(r) for r in slack_esc],
         "gmail_escalations": [dict(r) for r in gmail_esc],
         "total": len(slack_esc) + len(gmail_esc)
+    }
+
+# ─── Background Scheduler for Auto-Sync ───────────────────────────────────────
+scheduler = BackgroundScheduler()
+sync_log = {"last_slack": None, "last_gmail": None, "last_error": None}
+
+def sync_job():
+    """Background job to sync Slack and Gmail data"""
+    try:
+        token = get_token("slack")
+        if token:
+            result = fetch_slack_data()
+            sync_log["last_slack"] = datetime.now().isoformat()
+            print(f"[SYNC] Slack: {result}")
+
+        token = get_token("gmail")
+        if token:
+            result = fetch_gmail_data()
+            sync_log["last_gmail"] = datetime.now().isoformat()
+            print(f"[SYNC] Gmail: {result}")
+    except Exception as e:
+        sync_log["last_error"] = str(e)
+        print(f"[SYNC ERROR] {e}")
+
+def start_scheduler():
+    """Initialize and start the background scheduler"""
+    if not scheduler.running:
+        # Sync every 5 minutes
+        scheduler.add_job(
+            sync_job,
+            trigger=IntervalTrigger(minutes=5),
+            id="auto_sync",
+            name="Auto-sync Slack & Gmail",
+            replace_existing=True
+        )
+        scheduler.start()
+        print("[*] Auto-sync scheduler started (every 5 minutes)")
+
+def get_sync_status():
+    """Get current sync status"""
+    return {
+        "scheduler_running": scheduler.running,
+        "last_slack_sync": sync_log["last_slack"],
+        "last_gmail_sync": sync_log["last_gmail"],
+        "last_error": sync_log["last_error"]
     }

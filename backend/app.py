@@ -8,7 +8,7 @@ try:
 except:
     HAS_PANDAS = False
 
-from integrations import fetch_slack_data, fetch_gmail_data, get_slack_messages, get_gmail_emails, get_external_escalations, save_token
+from integrations import fetch_slack_data, fetch_gmail_data, get_slack_messages, get_gmail_emails, get_external_escalations, save_token, start_scheduler, get_sync_status
 
 app = Flask(__name__)
 DB_PATH = os.path.join(os.path.dirname(__file__), "plum_ems.db")
@@ -307,7 +307,15 @@ def get_integrations_data():
         "escalations": get_external_escalations()
     })
 
+@app.route("/api/integrations/status")
+def integrations_status():
+    """Get integration sync status"""
+    return jsonify(get_sync_status())
+
 if __name__=="__main__":
+    # Start background scheduler for auto-sync
+    start_scheduler()
+
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_ENV") == "development"
     print(f"[*] Plum EMS >> http://localhost:{port}")

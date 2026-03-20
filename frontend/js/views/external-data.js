@@ -9,7 +9,10 @@ const ExternalDataView = {
     return `
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-          <h2>External Data Integration</h2>
+          <div>
+            <h2>External Data Integration</h2>
+            <div id="sync-status-text" style="font-size:12px; color:#999; margin-top:4px">Auto-sync: every 5 minutes</div>
+          </div>
           <button id="refresh-external-btn" style="padding:8px 16px; background:#E8563A; color:white; border:none; border-radius:4px; cursor:pointer">
             🔄 Refresh Now
           </button>
@@ -110,6 +113,17 @@ const ExternalDataView = {
   },
 
   loadData() {
+    // Get sync status
+    API.get("/integrations/status").then(status => {
+      if (status.scheduler_running) {
+        const lastSlack = status.last_slack_sync ? new Date(status.last_slack_sync).toLocaleTimeString() : "Never";
+        const lastGmail = status.last_gmail_sync ? new Date(status.last_gmail_sync).toLocaleTimeString() : "Never";
+        document.getElementById("sync-status-text").innerHTML = `
+          Auto-sync: every 5 minutes | Slack: ${lastSlack} | Gmail: ${lastGmail}
+        `;
+      }
+    }).catch(e => console.error("Failed to get sync status:", e));
+
     API.get("/integrations/data").then(data => {
       // Update connection status
       if (data.slack_messages?.length > 0) {
