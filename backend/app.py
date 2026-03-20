@@ -410,7 +410,7 @@ def _intake_summary(issue, account, size):
 
 
 # ─── VP Daily Brief ───────────────────────────────────────────────────────────
-@app.route("/api/brief")
+@app.route("/api/morning/brief")
 def brief():
     critical_open = q("""SELECT id,account_name,account_size,subject,priority_score,
         issue_type,department,sentiment,delay_days,status,assigned_owner,sla_breach,ai_summary,action_required
@@ -591,7 +591,7 @@ def custom_analysis(file_id):
         return jsonify({"error":str(e)}),400
 
 
-@app.route("/api/brief/<file_id>")
+@app.route("/api/morning/brief/<file_id>")
 def custom_brief(file_id):
     if file_id not in UPLOAD_DATA: return jsonify({"error":"File not found"}),404
 

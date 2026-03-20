@@ -8,7 +8,7 @@ const BriefView = {
       <div id="brief-body"><div class="loading-row">Generating brief...</div></div>
     </div>`;
     try {
-      const data = await API.get("/brief");
+      const data = await API.get("/morning/brief");
       this.renderBody(data);
     } catch(e) {
       document.getElementById("brief-body").innerHTML = `<div class="card" style="padding:24px;border:1px solid var(--critical)"><div style="color:var(--critical);margin-bottom:8px">Error loading brief:</div><div style="font-family:var(--font-mono);font-size:11px;color:var(--text-secondary)">${e.message}</div></div>`;
