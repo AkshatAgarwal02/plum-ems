@@ -10,6 +10,7 @@ except:
 
 from integrations import fetch_slack_data, fetch_gmail_data, get_slack_messages, get_gmail_emails, get_external_escalations, save_token, start_scheduler, get_sync_status
 
+# Initialize Flask WITHOUT static folder (we'll handle it manually with routes)
 app = Flask(__name__)
 DB_PATH = os.path.join(os.path.dirname(__file__), "plum_ems.db")
 UPLOAD_DATA = {}  # temp storage for uploaded file data: {file_id: dataframe}
@@ -626,17 +627,24 @@ def custom_brief(file_id):
     })
 
 
-# ─── Serve static frontend files ─────────────────────────────────────────────────
-# Serve specific static directories
+# ─── Serve static files (MUST be BEFORE SPA fallback) ────────────────────────────
 @app.route("/css/<path:filename>")
 def serve_css(filename):
-    return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend/css"), filename)
+    frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
+    return send_from_directory(frontend_path, f"css/{filename}")
 
 @app.route("/js/<path:filename>")
 def serve_js(filename):
-    return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend/js"), filename)
+    frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
+    return send_from_directory(frontend_path, f"js/{filename}")
 
-# SPA fallback - serve index.html for any unmatched route
+@app.route("/assets/<path:filename>")
+def serve_assets(filename):
+    frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
+    return send_from_directory(frontend_path, f"assets/{filename}")
+
+# ─── SPA fallback route (MUST be LAST) ──────────────────────────────────────────
+# This fallback serves index.html for SPA routing
 @app.route("/<path:path>", defaults={"path": ""})
 def spa_fallback(path=""):
     if path.startswith("api/"):
