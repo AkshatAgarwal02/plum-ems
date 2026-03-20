@@ -17,6 +17,7 @@ function renderSidebar(activeView, stats={}) {
     <nav class="sidebar-nav">
       <div class="nav-section">Navigation</div>
       ${nav.map(n=>`<div class="nav-item ${activeView===n.id?"active":""}" data-view="${n.id}">${n.icon}${n.label}${n.badge?`<span class="nav-badge">${n.badge}</span>`:""}</div>`).join("")}
+      <div class="nav-item ${activeView==="upload"?"active":""}" data-view="upload"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Data</div>
       <div class="nav-section" style="margin-top:12px">Quick Filters</div>
       <div class="nav-item" data-view="escalations" data-filter="sla">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
