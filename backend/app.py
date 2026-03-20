@@ -45,6 +45,8 @@ def index():
 
 @app.route("/<path:path>")
 def statics(path):
+    # Don't serve API routes as static files
+    if path.startswith("api/"): return jsonify({"error": "Not found"}), 404
     return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend"), path)
 
 @app.route("/api/dashboard/stats")
