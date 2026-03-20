@@ -30,6 +30,7 @@ const App = {
     else if(view==="analytics") AnalyticsView.render(c);
     else if(view==="intake") IntakeView.render(c);
     else if(view==="upload") UploadView.render(c);
+    else if(view==="external") ExternalDataView.render(c);
   },
   navigate(view, filters={}) { this.render(view, filters); },
   topbarFor(view) {
@@ -40,6 +41,7 @@ const App = {
       analytics:["Analytics","Issue trends · Resolution · SLA performance"],
       intake:["Escalation Intake","Simulate & classify new escalations from Email · Slack · WhatsApp"],
       upload:["Upload Data","Analyze your own CSV or Excel file"],
+      external:["External Data","Connect Slack & Gmail · Sync messages & emails"],
     };
     const [title,sub]=t[view]||["Plum EMS",""];
     const actions=`<button class="btn btn-sm" onclick="App.navigate('intake')">+ New Escalation</button>`;

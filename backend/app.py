@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, redirect
 import sqlite3, os, tempfile, json, uuid
 from datetime import datetime, timedelta
 import sys
@@ -7,6 +7,8 @@ try:
     HAS_PANDAS = True
 except:
     HAS_PANDAS = False
+
+from integrations import fetch_slack_data, fetch_gmail_data, get_slack_messages, get_gmail_emails, get_external_escalations, save_token
 
 app = Flask(__name__)
 DB_PATH = os.path.join(os.path.dirname(__file__), "plum_ems.db")
@@ -229,6 +231,81 @@ def meta():
         "statuses":["Open","In Progress","Blocked","Closed"],"departments":vals("department"),
         "account_sizes":["Enterprise","Mid-Market","SME"],"owners":vals("assigned_owner"),
         "issue_types":vals("issue_type"),"industries":vals("industry")})
+
+# ─── Slack & Gmail Integration ────────────────────────────────────────────────────
+@app.route("/api/integrations/slack/auth")
+def slack_auth():
+    """Start Slack OAuth flow"""
+    scope = "channels:read,messages:read,users:read"
+    auth_url = f"https://slack.com/oauth/v2/authorize?client_id={os.getenv('SLACK_CLIENT_ID')}&scope={scope}&redirect_uri={os.getenv('SLACK_REDIRECT_URI','http://localhost:5000/api/integrations/slack/callback')}"
+    return jsonify({"auth_url": auth_url})
+
+@app.route("/api/integrations/slack/callback")
+def slack_callback():
+    """Slack OAuth callback"""
+    code = request.args.get("code")
+    if not code:
+        return jsonify({"error": "No code provided"}), 400
+
+    import requests
+    token_resp = requests.post("https://slack.com/api/oauth.v2.access", data={
+        "client_id": os.getenv("SLACK_CLIENT_ID"),
+        "client_secret": os.getenv("SLACK_CLIENT_SECRET"),
+        "code": code,
+        "redirect_uri": os.getenv("SLACK_REDIRECT_URI", "http://localhost:5000/api/integrations/slack/callback")
+    })
+
+    if token_resp.json().get("ok"):
+        access_token = token_resp.json().get("access_token")
+        save_token("slack", access_token)
+        return redirect("/?integration=slack&status=connected")
+    return jsonify({"error": "Failed to get token"}), 400
+
+@app.route("/api/integrations/gmail/auth")
+def gmail_auth():
+    """Start Gmail OAuth flow"""
+    scope = "https://www.googleapis.com/auth/gmail.readonly"
+    auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?client_id={os.getenv('GMAIL_CLIENT_ID')}&redirect_uri={os.getenv('GMAIL_REDIRECT_URI','http://localhost:5000/api/integrations/gmail/callback')}&response_type=code&scope={scope}"
+    return jsonify({"auth_url": auth_url})
+
+@app.route("/api/integrations/gmail/callback")
+def gmail_callback():
+    """Gmail OAuth callback"""
+    code = request.args.get("code")
+    if not code:
+        return jsonify({"error": "No code provided"}), 400
+
+    import requests
+    token_resp = requests.post("https://oauth2.googleapis.com/token", data={
+        "client_id": os.getenv("GMAIL_CLIENT_ID"),
+        "client_secret": os.getenv("GMAIL_CLIENT_SECRET"),
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": os.getenv("GMAIL_REDIRECT_URI", "http://localhost:5000/api/integrations/gmail/callback")
+    })
+
+    if token_resp.status_code == 200:
+        access_token = token_resp.json().get("access_token")
+        save_token("gmail", access_token)
+        return redirect("/?integration=gmail&status=connected")
+    return jsonify({"error": "Failed to get token"}), 400
+
+@app.route("/api/integrations/sync")
+def sync_integrations():
+    """Manually sync Slack and Gmail data"""
+    results = {}
+    results["slack"] = fetch_slack_data()
+    results["gmail"] = fetch_gmail_data()
+    return jsonify(results)
+
+@app.route("/api/integrations/data")
+def get_integrations_data():
+    """Get all synced external data"""
+    return jsonify({
+        "slack_messages": get_slack_messages(50),
+        "gmail_emails": get_gmail_emails(50),
+        "escalations": get_external_escalations()
+    })
 
 if __name__=="__main__":
     port = int(os.environ.get("PORT", 5000))

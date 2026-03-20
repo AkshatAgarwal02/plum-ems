@@ -378,6 +378,45 @@ def create_db(records):
     conn.commit()
     for idx in ["priority","status","account_name","department","is_escalation","assigned_owner","timestamp","issue_type"]:
         c.execute(f"CREATE INDEX idx_{idx} ON escalations({idx})")
+
+    # Create external data tables for Slack & Gmail integration
+    c.execute("""CREATE TABLE oauth_tokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        platform TEXT UNIQUE,
+        access_token TEXT,
+        refresh_token TEXT,
+        expires_at TEXT,
+        created_at TEXT
+    )""")
+
+    c.execute("""CREATE TABLE slack_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        channel_id TEXT,
+        channel_name TEXT,
+        user_id TEXT,
+        user_name TEXT,
+        message TEXT,
+        timestamp TEXT,
+        is_escalation INTEGER DEFAULT 0,
+        escalation_type TEXT,
+        priority TEXT,
+        created_at TEXT
+    )""")
+
+    c.execute("""CREATE TABLE gmail_emails (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        message_id TEXT UNIQUE,
+        from_email TEXT,
+        subject TEXT,
+        body TEXT,
+        labels TEXT,
+        timestamp TEXT,
+        is_escalation INTEGER DEFAULT 0,
+        escalation_type TEXT,
+        priority TEXT,
+        created_at TEXT
+    )""")
+
     conn.commit(); conn.close()
     esc = [r for r in records if r[11]]
     print(f"✅ Database: {DB_PATH}")
