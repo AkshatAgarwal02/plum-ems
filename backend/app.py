@@ -10,12 +10,12 @@ except:
 
 from integrations import fetch_slack_data, fetch_gmail_data, get_slack_messages, get_gmail_emails, get_external_escalations, save_token, start_scheduler, get_sync_status
 
-# Initialize Flask with proper static folder configuration
 # Get absolute path to frontend directory
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(os.path.dirname(BACKEND_DIR), "frontend")
 
-app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
+# Initialize Flask WITHOUT static folder (we'll handle it manually)
+app = Flask(__name__, static_folder=None, static_url_path=None)
 DB_PATH = os.path.join(os.path.dirname(__file__), "plum_ems.db")
 UPLOAD_DATA = {}  # temp storage for uploaded file data: {file_id: dataframe}
 
@@ -47,6 +47,19 @@ def cors(resp):
 @app.route("/")
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")
+
+# ─── Static file routes (MUST be BEFORE API routes) ─────────────────────────────
+@app.route("/css/<path:filename>")
+def serve_css(filename):
+    return send_from_directory(os.path.join(FRONTEND_DIR, "css"), filename)
+
+@app.route("/js/<path:filename>")
+def serve_js(filename):
+    return send_from_directory(os.path.join(FRONTEND_DIR, "js"), filename)
+
+@app.route("/assets/<path:filename>")
+def serve_assets(filename):
+    return send_from_directory(os.path.join(FRONTEND_DIR, "assets"), filename)
 
 @app.route("/api/dashboard/stats")
 def dash_stats():
@@ -632,19 +645,16 @@ def custom_brief(file_id):
 
 
 # ─── SPA fallback route (MUST be LAST) ──────────────────────────────────────────
-# Flask handles /css, /js, /assets automatically via static_folder
-# This route catches everything else for SPA routing
+# Static files (/css, /js, /assets) are handled by explicit routes above
+# This route only handles SPA client-side routing for everything else
 @app.route("/<path:path>", defaults={"path": ""})
 def spa_fallback(path=""):
-    # NEVER serve SPA for /api routes - let them 404 properly
+    # NEVER serve SPA for /api routes - they should have failed to match
     if path.startswith("api/"):
         return jsonify({"error": "Not found"}), 404
 
-    # For everything else, serve index.html for SPA client-side routing
-    try:
-        return send_from_directory(FRONTEND_DIR, "index.html")
-    except:
-        return jsonify({"error": "Not found"}), 404
+    # Serve index.html for all other routes (SPA client-side routing)
+    return send_from_directory(FRONTEND_DIR, "index.html")
 
 
 if __name__=="__main__":
