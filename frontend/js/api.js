@@ -18,8 +18,8 @@ const API={
   priorityAge:()=>API.get("/analytics/priority-age"),
   slaPerformance:()=>API.get("/analytics/sla-performance"),
   filters:()=>API.get("/meta/filters"),
-  brief:()=>API.get("/morning/brief"),
+  brief:()=>API.get("/brief"),
   intake:(d)=>API.post("/intake",d),
   customAnalysis:(id)=>API.get(`/analysis/${id}`),
-  customBrief:(id)=>API.get(`/morning/brief/${id}`),
+  customBrief:(id)=>API.get(`/brief/${id}`),
 };
