@@ -627,32 +627,25 @@ def custom_brief(file_id):
     })
 
 
-# ─── Serve static files (MUST be BEFORE SPA fallback) ────────────────────────────
-@app.route("/css/<path:filename>")
-def serve_css(filename):
-    frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
-    return send_from_directory(frontend_path, f"css/{filename}")
-
-@app.route("/js/<path:filename>")
-def serve_js(filename):
-    frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
-    return send_from_directory(frontend_path, f"js/{filename}")
-
-@app.route("/assets/<path:filename>")
-def serve_assets(filename):
-    frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
-    return send_from_directory(frontend_path, f"assets/{filename}")
-
-# ─── SPA fallback route (MUST be LAST) ──────────────────────────────────────────
-# This fallback serves index.html for SPA routing (but NOT for /api routes)
+# ─── Serve static files and SPA fallback (MUST be LAST) ──────────────────────
 @app.route("/<path:path>", defaults={"path": ""})
 def spa_fallback(path=""):
+    frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
+
     # NEVER serve SPA for /api routes - let them 404 properly
     if path.startswith("api/"):
         return jsonify({"error": "Not found"}), 404
+
+    # Try to serve static files first (css, js, assets)
+    if path.startswith("css/") or path.startswith("js/") or path.startswith("assets/"):
+        try:
+            return send_from_directory(frontend_path, path)
+        except:
+            return jsonify({"error": "File not found"}), 404
+
     # For everything else, serve index.html for SPA client-side routing
     try:
-        return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend"), "index.html")
+        return send_from_directory(frontend_path, "index.html")
     except:
         return jsonify({"error": "Not found"}), 404
 
