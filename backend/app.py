@@ -10,8 +10,8 @@ except:
 
 from integrations import fetch_slack_data, fetch_gmail_data, get_slack_messages, get_gmail_emails, get_external_escalations, save_token, start_scheduler, get_sync_status
 
-# Initialize Flask WITHOUT static folder (we'll handle it manually with routes)
-app = Flask(__name__)
+# Initialize Flask WITHOUT automatic static folder
+app = Flask(__name__, static_folder=None, static_url_path=None)
 DB_PATH = os.path.join(os.path.dirname(__file__), "plum_ems.db")
 UPLOAD_DATA = {}  # temp storage for uploaded file data: {file_id: dataframe}
 
@@ -644,14 +644,17 @@ def serve_assets(filename):
     return send_from_directory(frontend_path, f"assets/{filename}")
 
 # ─── SPA fallback route (MUST be LAST) ──────────────────────────────────────────
-# This fallback serves index.html for SPA routing
+# This fallback serves index.html for SPA routing (but NOT for /api routes)
 @app.route("/<path:path>", defaults={"path": ""})
 def spa_fallback(path=""):
+    # NEVER serve SPA for /api routes - let them 404 properly
     if path.startswith("api/"):
-        # Don't serve SPA for API routes that don't exist
         return jsonify({"error": "Not found"}), 404
-    # Serve index.html for SPA routing
-    return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend"), "index.html")
+    # For everything else, serve index.html for SPA client-side routing
+    try:
+        return send_from_directory(os.path.join(os.path.dirname(__file__), "../frontend"), "index.html")
+    except:
+        return jsonify({"error": "Not found"}), 404
 
 
 if __name__=="__main__":
