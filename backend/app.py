@@ -424,7 +424,7 @@ def _intake_summary(issue, account, size):
 
 # ─── VP Daily Brief ───────────────────────────────────────────────────────────
 @app.route("/api/brief")
-def brief():
+def get_brief():
     critical_open = q("""SELECT id,account_name,account_size,subject,priority_score,
         issue_type,department,sentiment,delay_days,status,assigned_owner,sla_breach,ai_summary,action_required
         FROM escalations WHERE priority='Critical' AND status!='Closed' AND is_escalation=1
